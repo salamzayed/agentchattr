@@ -122,7 +122,28 @@ def run_agent(command, extra_args, cwd, env, queue_file, agent, no_restart, star
                 # Session still alive — user detached, agent running in background
                 print(f"\n  Detached. {agent.capitalize()} still running in tmux.")
                 print(f"  Reattach: tmux attach -t {session_name}")
-                break
+                # Keep this process alive so daemon threads (heartbeat + watcher) keep running
+                try:
+                    while True:
+                        alive = subprocess.run(
+                            ["tmux", "has-session", "-t", session_name],
+                            capture_output=True,
+                        )
+                        if alive.returncode != 0:
+                            # Session died — restart if allowed
+                            break
+                        time.sleep(5)
+                except KeyboardInterrupt:
+                    subprocess.run(
+                        ["tmux", "kill-session", "-t", session_name],
+                        capture_output=True,
+                    )
+                    return
+                if no_restart:
+                    return
+                print(f"\n  {agent.capitalize()} session ended. Restarting in 3s... (Ctrl+C to quit)")
+                time.sleep(3)
+                continue
 
             # Session gone — agent exited
             if no_restart:
