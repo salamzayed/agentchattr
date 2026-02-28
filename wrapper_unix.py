@@ -32,12 +32,19 @@ def _check_tmux():
 
 def inject(text: str, *, tmux_session: str):
     """Send text + Enter to a tmux session via send-keys."""
+    # Clear any stacked/partial input first (Escape clears without interrupting)
+    subprocess.run(
+        ["tmux", "send-keys", "-t", tmux_session, "Escape"],
+        capture_output=True,
+    )
+    time.sleep(0.1)
     # Use -l to send text literally (avoids misinterpreting as key names),
-    # then send Enter as a separate key press
+    # then send Enter as a separate key press with a small delay
     subprocess.run(
         ["tmux", "send-keys", "-t", tmux_session, "-l", text],
         capture_output=True,
     )
+    time.sleep(0.1)
     subprocess.run(
         ["tmux", "send-keys", "-t", tmux_session, "Enter"],
         capture_output=True,
