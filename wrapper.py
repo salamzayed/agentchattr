@@ -104,7 +104,7 @@ def _notify_recovery(data_dir: Path, agent_name: str):
 def _queue_watcher(queue_file: Path, agent_name: str, inject_fn):
     """Poll queue file; call inject_fn('chat - use mcp') when triggered."""
     last_inject_time = 0.0
-    cooldown = 30  # seconds — wait for agent to finish before re-injecting
+    cooldown = 15  # seconds — minimum gap between injections
 
     while True:
         try:
@@ -136,7 +136,7 @@ def _queue_watcher(queue_file: Path, agent_name: str, inject_fn):
                         time.sleep(wait)
                     # Small delay to let the TUI settle, then inject once
                     time.sleep(0.5)
-                    inject_fn(f"mcp read #{channel} and if addressed respond in the chat")
+                    inject_fn(f"agentchattr: read #{channel} — if you are assigned work, do it now using your tools (read files, make edits, run checks), then post your results to chat")
                     last_inject_time = time.monotonic()
         except Exception:
             pass  # Silently continue — monitor will restart if thread dies
