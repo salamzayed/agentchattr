@@ -117,10 +117,15 @@ def run_agent(command, extra_args, cwd, env, queue_file, agent, no_restart, star
                 print(f"  Error: failed to create tmux session (exit {result.returncode})")
                 break
 
-            # Attach — blocks until agent exits or user detaches (Ctrl+B, D)
-            subprocess.run(["tmux", "attach-session", "-t", session_name])
+            # Attach only if we have a controlling terminal (interactive use).
+            # When run in background/headless, skip attach and go straight to
+            # the keep-alive loop so heartbeat/watcher threads stay running.
+            import sys as _sys
+            has_tty = _sys.stdin.isatty()
+            if has_tty:
+                subprocess.run(["tmux", "attach-session", "-t", session_name])
 
-            # Check: did the agent exit, or did the user just detach?
+            # Check: did the agent exit, or did the user just detach (or no TTY)?
             check = subprocess.run(
                 ["tmux", "has-session", "-t", session_name],
                 capture_output=True,

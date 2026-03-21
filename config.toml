@@ -9,6 +9,7 @@ data_dir = "./data"
 
 [agents.claude]
 command = "claude"
+args = ["--dangerously-skip-permissions"]
 cwd = ".."
 color = "#da7756"
 label = "Claude"

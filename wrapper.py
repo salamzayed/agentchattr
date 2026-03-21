@@ -167,6 +167,7 @@ def main():
     agent_cfg = config.get("agents", {}).get(agent, {})
     cwd = agent_cfg.get("cwd", ".")
     command = agent_cfg.get("command", agent)
+    extra = agent_cfg.get("args", []) + extra
     data_dir = ROOT / config.get("server", {}).get("data_dir", "./data")
     data_dir.mkdir(parents=True, exist_ok=True)
     queue_file = data_dir / f"{agent}_queue.jsonl"
